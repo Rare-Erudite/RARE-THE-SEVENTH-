@@ -1,0 +1,8 @@
+{
+  "name": "RARE",
+  "description": "Protected personal AI core with conversation, memory, VisionCraft Image Studio (Gemini 3 Pro & Nano Banana 2.1), live voice dialogue, documents, and research.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

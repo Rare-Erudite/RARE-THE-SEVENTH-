@@ -1,0 +1,53 @@
+name: Build and Release Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    name: Build RARE Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Node Dependencies
+        run: npm ci || npm install
+
+      - name: Build Web Production Assets
+        run: npm run build
+
+      - name: Install Android Packaging Tools
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
+            aapt zipalign apksigner ecj dalvik-exchange android-sdk-platform-23 openjdk-17-jdk-headless
+
+      - name: Build and Sign Android APK
+        run: |
+          chmod +x scripts/build_apk.sh
+          bash scripts/build_apk.sh
+
+      - name: Verify APK Integrity & Signatures
+        run: |
+          ls -lh exports/rare-v1.0.0-release.apk
+          apksigner verify --verbose exports/rare-v1.0.0-release.apk
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RARE-v1.0.0-release.apk
+          path: exports/rare-v1.0.0-release.apk
+          if-no-files-found: error
